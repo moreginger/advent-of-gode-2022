@@ -25,15 +25,7 @@ func getPriority(item int32) (int32, error) {
 	return -1, errors.New(fmt.Sprintf("Invalid item %v", item))
 }
 
-func getCompartment(items []int32) map[int32]struct{} {
-	compartment := make(map[int32]struct{})
-	for _, item := range items {
-		compartment[item] = struct{}{}
-	}
-	return compartment
-}
-
-func getCompartments(rucksack string) []map[int32]struct{} {
+func getItems(rucksack string) []int32 {
 	var items []int32
 	for _, item := range rucksack {
 		priority, err := getPriority(item)
@@ -42,7 +34,18 @@ func getCompartments(rucksack string) []map[int32]struct{} {
 		}
 		items = append(items, priority)
 	}
+	return items
+}
 
+func getCompartment(items []int32) map[int32]struct{} {
+	compartment := make(map[int32]struct{})
+	for _, item := range items {
+		compartment[item] = struct{}{}
+	}
+	return compartment
+}
+
+func getCompartments(items []int32) []map[int32]struct{} {
 	var compartments []map[int32]struct{}
 	compartments = append(compartments, getCompartment(items[:len(items)/2]))
 	compartments = append(compartments, getCompartment(items[len(items)/2:]))
@@ -67,18 +70,43 @@ func Intersect[T comparable](l map[T]struct{}, r map[T]struct{}) map[T]struct{} 
 	return result
 }
 
+func getPriorityPart1(rucksack string) int {
+	items := getItems(rucksack)
+	compartments := getCompartments(items)
+	common := Intersect(compartments[0], compartments[1])
+	priority := Keys(common)[0]
+	return int(priority)
+}
+
+func getPriorityPart2(rucksacks []string) int {
+	var items []map[int32]struct{}
+	for _, rucksack := range rucksacks {
+		items = append(items, getCompartment(getItems(rucksack)))
+	}
+	common := Intersect(Intersect(items[0], items[1]), items[2])
+	priority := Keys(common)[0]
+	return int(priority)
+}
+
 func main() {
 	f := openInput("main/2022-3/input.txt")
+	defer f.Close()
 
-	sum := 0
+	sum1, sum2 := 0, 0
+	var group []string
+
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		rucksack := scanner.Text()
-		compartments := getCompartments(rucksack)
-		common := Intersect(compartments[0], compartments[1])
-		priority := Keys(common)[0]
-		sum += int(priority)
+		sum1 += getPriorityPart1(rucksack)
+
+		group = append(group, rucksack)
+		if len(group) == 3 {
+			sum2 += getPriorityPart2(group)
+			group = nil
+		}
 	}
 
-	fmt.Println(sum)
+	fmt.Println(sum1)
+	fmt.Println(sum2)
 }

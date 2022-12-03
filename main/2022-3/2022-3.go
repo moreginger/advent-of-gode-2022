@@ -25,15 +25,15 @@ func getPriority(item int32) (int32, error) {
 	return -1, errors.New(fmt.Sprintf("Invalid item %v", item))
 }
 
-func getCompartment(items []int32) map[int32]bool {
-	compartment := make(map[int32]bool)
+func getCompartment(items []int32) map[int32]struct{} {
+	compartment := make(map[int32]struct{})
 	for _, item := range items {
-		compartment[item] = true
+		compartment[item] = struct{}{}
 	}
 	return compartment
 }
 
-func getCompartments(rucksack string) []map[int32]bool {
+func getCompartments(rucksack string) []map[int32]struct{} {
 	var items []int32
 	for _, item := range rucksack {
 		priority, err := getPriority(item)
@@ -43,13 +43,13 @@ func getCompartments(rucksack string) []map[int32]bool {
 		items = append(items, priority)
 	}
 
-	var compartments []map[int32]bool
+	var compartments []map[int32]struct{}
 	compartments = append(compartments, getCompartment(items[:len(items)/2]))
-	compartments = append(compartments, getCompartment(items[len(items)/2:len(items)]))
+	compartments = append(compartments, getCompartment(items[len(items)/2:]))
 	return compartments
 }
 
-func Keys[T comparable](m map[T]bool) []T {
+func Keys[T comparable](m map[T]struct{}) []T {
 	var result []T
 	for k := range m {
 		result = append(result, k)
@@ -57,11 +57,11 @@ func Keys[T comparable](m map[T]bool) []T {
 	return result
 }
 
-func Intersect[T comparable](l map[T]bool, r map[T]bool) map[T]bool {
-	result := make(map[T]bool)
+func Intersect[T comparable](l map[T]struct{}, r map[T]struct{}) map[T]struct{} {
+	result := make(map[T]struct{})
 	for key, _ := range l {
-		if r[key] {
-			result[key] = true
+		if _, ok := r[key]; ok {
+			result[key] = struct{}{}
 		}
 	}
 	return result

@@ -44,13 +44,12 @@ func getRanges(input string) []Range {
 	return ranges
 }
 
-func (x Range) IsSuperset(other Range) bool {
+func (x Range) IsSubset(other Range) bool {
 	return x.min >= other.min && x.max <= other.max
 }
 
 func (x Range) Overlaps(other Range) bool {
-	return x.IsSuperset(other) ||
-		other.IsSuperset(x) ||
+	return other.IsSubset(x) ||
 		(x.min >= other.min && x.min <= other.max) ||
 		(x.max >= other.min && x.max <= other.max)
 }
@@ -66,7 +65,7 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		ranges := getRanges(line)
-		if ranges[0].IsSuperset(ranges[1]) || ranges[1].IsSuperset(ranges[0]) {
+		if ranges[0].IsSubset(ranges[1]) || ranges[1].IsSubset(ranges[0]) {
 			subsets++
 		}
 		if ranges[0].Overlaps(ranges[1]) {

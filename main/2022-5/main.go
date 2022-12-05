@@ -95,7 +95,8 @@ func applyInstructions(stacks [][]string, instructions []Instruction, blockMove 
 	result := make([][]string, len(stacks))
 	copy(result, stacks)
 	for _, instruction := range instructions {
-		toMove := result[instruction.from][:instruction.move]
+		toMove := make([]string, instruction.move)
+		copy(toMove, result[instruction.from][:instruction.move])
 		if !blockMove {
 			toMove = reverse(toMove)
 		}

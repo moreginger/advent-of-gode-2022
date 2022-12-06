@@ -17,9 +17,7 @@ func openInput(path string) *os.File {
 	return f
 }
 
-func main() {
-
-	windowSize := 4
+func findStartOfMessage(windowSize int) int {
 	window := make([]rune, windowSize)
 	for i := range window {
 		window[i] = -1
@@ -70,5 +68,10 @@ func main() {
 		}
 	}
 
-	fmt.Println(fileIndex + 1)
+	return fileIndex + 1
+}
+
+func main() {
+	fmt.Println(findStartOfMessage(4))
+	fmt.Println(findStartOfMessage(14))
 }

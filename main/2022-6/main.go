@@ -27,7 +27,7 @@ func findStartOfMessage(windowSize int) int {
 	counts := make(map[rune]int, 52)
 	multiples := 0
 
-	f := openInput("main/2022-6/input.txt")
+	f := openInput("input.txt")
 	b := make([]byte, 16)
 	fileIndex := 0
 

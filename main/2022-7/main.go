@@ -99,12 +99,18 @@ func main() {
 	}
 
 	total := 0
+	requiredSpace := dirs[""].size + 30000000 - 70000000
+	fmt.Println(requiredSpace)
+	smallestDir := dirs[""]
 	for _, dir := range dirs {
-		fmt.Println(dir)
 		if dir.size <= 100000 {
 			total += dir.size
+		}
+		if dir.size >= requiredSpace && dir.size < smallestDir.size {
+			smallestDir = dir
 		}
 	}
 
 	fmt.Println(total)
+	fmt.Println(smallestDir)
 }

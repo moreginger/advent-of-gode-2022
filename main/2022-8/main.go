@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 func panicOnErr(err error) {
@@ -17,14 +16,6 @@ func openInput(path string) *os.File {
 	f, err := os.Open(path)
 	panicOnErr(err)
 	return f
-}
-
-func parseInt(input string) int {
-	i, err := strconv.ParseInt(input, 10, 0)
-	if err != nil {
-		panic(err)
-	}
-	return int(i)
 }
 
 func readTrees() [][]int {

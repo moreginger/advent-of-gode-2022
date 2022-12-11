@@ -72,6 +72,13 @@ func parseInstruction(line string) Instruction {
 	}
 }
 
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+	return i
+}
+
 func DoIt(inputName string) int {
 	f := openInput(inputName)
 	scanner := bufio.NewScanner(f)
@@ -89,6 +96,16 @@ func DoIt(inputName string) int {
 		for complete := false; complete == false; complete = instruction.step(registers) {
 			if (cycle-20)%40 == 0 {
 				signalSum += registers.X * cycle
+			}
+
+			position := (cycle - 1) % 40
+			char := '.'
+			if abs(registers.X-position) <= 1 {
+				char = '#'
+			}
+			fmt.Printf("%c", char)
+			if position == 39 {
+				fmt.Println()
 			}
 			cycle++
 			//fmt.Printf("%s %+v %+v\n", reflect.TypeOf(instruction), instruction, registers)

@@ -109,25 +109,29 @@ func adjustTail(head Coordinate, tail Coordinate) Coordinate {
 	}
 }
 
-func Doit(inputName string) int {
+func Doit(inputName string, knots int) int {
 	f := openInput(inputName)
 	scanner := bufio.NewScanner(f)
 
-	head := Coordinate{
-		x: 0, y: 0,
+	rope := make([]Coordinate, knots)
+	for i := range rope {
+		rope[i] = Coordinate{
+			x: 0, y: 0,
+		}
 	}
-	tail := head
 
 	visited := make(map[Coordinate]struct{})
-	visited[tail] = struct{}{}
+	visited[rope[knots-1]] = struct{}{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		movements := readMovements(line)
 		for _, movement := range movements {
-			head = movement.apply(head)
-			tail = adjustTail(head, tail)
-			visited[tail] = struct{}{}
+			rope[0] = movement.apply(rope[0])
+			for i := 1; i < knots; i++ {
+				rope[i] = adjustTail(rope[i-1], rope[i])
+			}
+			visited[rope[knots-1]] = struct{}{}
 		}
 	}
 
@@ -135,5 +139,6 @@ func Doit(inputName string) int {
 }
 
 func main() {
-	fmt.Println(Doit("main/2022-9/input.txt"))
+	fmt.Println(Doit("main/2022-9/input.txt", 1))
+	fmt.Println(Doit("main/2022-9/input.txt", 10))
 }

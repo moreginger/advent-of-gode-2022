@@ -22,19 +22,19 @@ func openInput(path string) *os.File {
 	return f
 }
 
-func parseInt(input string) int {
-	i, err := strconv.ParseInt(input, 10, 0)
+func parseInt(input string) int64 {
+	i, err := strconv.ParseInt(input, 10, 64)
 	if err != nil {
 		panic(err)
 	}
-	return int(i)
+	return i
 }
 
 type Monkey struct {
-	items  []int
-	apply  func(item int) int
-	test   func(item int) int
-	tested int
+	items  []int64
+	apply  func(item int64) int64
+	test   func(item int64) int64
+	tested int64
 }
 
 func parseMonkey(scanner *bufio.Scanner) *Monkey {
@@ -50,25 +50,25 @@ func parseMonkey(scanner *bufio.Scanner) *Monkey {
 	scanner.Scan()
 	testFalseRaw := scanner.Text()[len("    If false: throw to monkey "):]
 
-	var items []int
+	var items []int64
 	for _, item := range strings.Split(startingItemsRaw, ", ") {
 		items = append(items, parseInt(item))
 	}
 
-	var apply func(item int) int
+	var apply func(item int64) int64
 	if strings.HasPrefix(operationRaw, "+ ") {
 		value := parseInt(operationRaw[2:])
-		apply = func(item int) int {
+		apply = func(item int64) int64 {
 			return item + value
 		}
 	} else if strings.HasPrefix(operationRaw, "* ") {
 		if operationRaw == "* old" {
-			apply = func(item int) int {
+			apply = func(item int64) int64 {
 				return item * item
 			}
 		} else {
 			value := parseInt(operationRaw[2:])
-			apply = func(item int) int {
+			apply = func(item int64) int64 {
 				return item * value
 			}
 		}
@@ -84,7 +84,7 @@ func parseMonkey(scanner *bufio.Scanner) *Monkey {
 	return &Monkey{
 		items: items,
 		apply: apply,
-		test: func(item int) int {
+		test: func(item int64) int64 {
 			if item%test == 0 {
 				return testTrue
 			}
@@ -94,7 +94,7 @@ func parseMonkey(scanner *bufio.Scanner) *Monkey {
 	}
 }
 
-func DoIt(inputName string) int {
+func DoIt(inputName string, loops int, worryReduction int64) int64 {
 	f := openInput(inputName)
 	scanner := bufio.NewScanner(f)
 
@@ -107,16 +107,16 @@ func DoIt(inputName string) int {
 		}
 	}
 
-	for i := 0; i < 20; i++ {
+	for i := 0; i < loops; i++ {
 		for _, m := range monkeys {
 			for _, item := range m.items {
 				item = m.apply(item)
-				item /= 3
+				item /= worryReduction
 				destination := monkeys[m.test(item)]
 				destination.items = append(destination.items, item)
 				m.tested++
 			}
-			m.items = make([]int, 0)
+			m.items = make([]int64, 0)
 		}
 	}
 
@@ -124,10 +124,13 @@ func DoIt(inputName string) int {
 		return monkeys[i].tested > monkeys[j].tested
 	})
 
+	fmt.Println(monkeys[0].tested, monkeys[1].tested)
 	return monkeys[0].tested * monkeys[1].tested
 }
 
 func main() {
-	result := DoIt("main/2022-11/input.txt")
+	result := DoIt("main/2022-11/input.txt", 20, 3)
+	fmt.Println(result)
+	result = DoIt("main/2022-11/input.txt", 10000, 1)
 	fmt.Println(result)
 }

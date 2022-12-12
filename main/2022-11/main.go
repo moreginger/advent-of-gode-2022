@@ -37,14 +37,14 @@ type Monkey struct {
 	tested int64
 }
 
-func parseMonkey(scanner *bufio.Scanner) *Monkey {
+func parseMonkey(scanner *bufio.Scanner) (*Monkey, int64) {
 	// Ignore header text
 	scanner.Scan()
 	startingItemsRaw := scanner.Text()[len("  Starting items: "):]
 	scanner.Scan()
 	operationRaw := scanner.Text()[len("  Operation: new = old "):]
 	scanner.Scan()
-	testRaw := scanner.Text()[len("  Test: divisible by "):]
+	divisorRaw := scanner.Text()[len("  Test: divisible by "):]
 	scanner.Scan()
 	testTrueRaw := scanner.Text()[len("    If true: throw to monkey "):]
 	scanner.Scan()
@@ -54,6 +54,10 @@ func parseMonkey(scanner *bufio.Scanner) *Monkey {
 	for _, item := range strings.Split(startingItemsRaw, ", ") {
 		items = append(items, parseInt(item))
 	}
+
+	divisor := parseInt(divisorRaw)
+	testTrue := parseInt(testTrueRaw)
+	testFalse := parseInt(testFalseRaw)
 
 	var apply func(item int64) int64
 	if strings.HasPrefix(operationRaw, "+ ") {
@@ -77,21 +81,17 @@ func parseMonkey(scanner *bufio.Scanner) *Monkey {
 		panic(errors.New(operationRaw))
 	}
 
-	test := parseInt(testRaw)
-	testTrue := parseInt(testTrueRaw)
-	testFalse := parseInt(testFalseRaw)
-
 	return &Monkey{
 		items: items,
 		apply: apply,
 		test: func(item int64) int64 {
-			if item%test == 0 {
+			if item%divisor == 0 {
 				return testTrue
 			}
 			return testFalse
 		},
 		tested: 0,
-	}
+	}, divisor
 }
 
 func DoIt(inputName string, loops int, worryReduction int64) int64 {
@@ -100,8 +100,11 @@ func DoIt(inputName string, loops int, worryReduction int64) int64 {
 
 	var monkeys []*Monkey
 
+	factor := int64(1)
 	for scanner.Scan() {
-		monkeys = append(monkeys, parseMonkey(scanner))
+		m, div := parseMonkey(scanner)
+		monkeys = append(monkeys, m)
+		factor *= div
 		if !scanner.Scan() {
 			break
 		}
@@ -112,6 +115,7 @@ func DoIt(inputName string, loops int, worryReduction int64) int64 {
 			for _, item := range m.items {
 				item = m.apply(item)
 				item /= worryReduction
+				item %= factor
 				destination := monkeys[m.test(item)]
 				destination.items = append(destination.items, item)
 				m.tested++

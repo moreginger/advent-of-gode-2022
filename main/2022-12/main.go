@@ -73,9 +73,17 @@ func ReadNodes(inputName string) ([]*Node, *Node, *Node) {
 	}
 
 	var flatNodes []*Node
-	for _, x := range nodes {
-		flatNodes = append(flatNodes, x...)
+	for _, row := range nodes {
+		flatNodes = append(flatNodes, row...)
 	}
+
+	// DEBUG
+	//for i, n := range flatNodes {
+	//	fmt.Print(*n, ", ")
+	//	if i%8 == 7 {
+	//		fmt.Println()
+	//	}
+	//}
 
 	return flatNodes, startNode, endNode
 }
@@ -91,6 +99,10 @@ func getIndex(nodes []*Node, query *Node) int {
 
 func DoIt(inputName string) int {
 	nodes, startNode, endNode := ReadNodes(inputName)
+
+	//fmt.Println("startNode", startNode)
+	//fmt.Println("endNode", endNode)
+
 	startNodeIndex := getIndex(nodes, startNode)
 	endNodeIndex := getIndex(nodes, endNode)
 	distance := make([]int, len(nodes))
@@ -108,14 +120,14 @@ func DoIt(inputName string) int {
 	for i, _ := range nodes {
 		queue[i] = i
 	}
-	for len(queue) > 1 {
+	for len(queue) > 0 {
 		sort.Slice(queue, func(i, j int) bool {
 			return distance[queue[i]] < distance[queue[j]]
 		})
 		nodeIndex := queue[0]
 		queue = queue[1:]
 
-		if distance[nodeIndex] == math.MaxInt {
+		if nodeIndex != startNodeIndex && previous[nodeIndex] == -1 {
 			// Unreachable
 			continue
 		}

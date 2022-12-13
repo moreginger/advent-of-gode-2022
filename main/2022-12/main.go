@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"os"
-	"sort"
 	"strings"
+	"time"
 )
 
 func panicOnErr(err error) {
@@ -110,11 +111,16 @@ func DoIt(inputName string) int {
 		queue[i] = node
 	}
 	for len(queue) > 0 {
-		sort.Slice(queue, func(i, j int) bool {
-			return distance[queue[i]] < distance[queue[j]]
-		})
-		node := queue[0]
-		queue = queue[1:]
+		qiMin, distanceMin := 0, math.MaxInt
+		var node *Node
+		for qi, n := range queue {
+			if distance[n] < distanceMin {
+				qiMin = qi
+				distanceMin = distance[n]
+				node = n
+			}
+		}
+		queue = append(queue[:qiMin], queue[qiMin+1:]...)
 
 		if node != startNode && previous[node] == nil {
 			// Unreachable
@@ -155,6 +161,9 @@ func DoIt(inputName string) int {
 }
 
 func main() {
+	start := time.Now()
 	result := DoIt("main/2022-12/input.txt")
+	elapsed := time.Since(start)
+	log.Printf("Elapsed %s", elapsed)
 	fmt.Println(result)
 }

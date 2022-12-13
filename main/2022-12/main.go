@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -18,7 +17,7 @@ func panicOnErr(err error) {
 type Node struct {
 	x         int
 	y         int
-	height    uint8
+	height    int
 	neighbors []*Node
 }
 
@@ -39,7 +38,7 @@ func ReadNodes(inputName string) ([]*Node, *Node, *Node) {
 			node := &Node{
 				x:         x,
 				y:         y,
-				height:    lines[y][x],
+				height:    int(lines[y][x]),
 				neighbors: []*Node{},
 			}
 			if node.height == 'S' {
@@ -88,82 +87,71 @@ func ReadNodes(inputName string) ([]*Node, *Node, *Node) {
 	return flatNodes, startNode, endNode
 }
 
-func getIndex(nodes []*Node, query *Node) int {
-	for i, node := range nodes {
-		if node == query {
-			return i
-		}
-	}
-	panic(errors.New("not found"))
-}
-
 func DoIt(inputName string) int {
 	nodes, startNode, endNode := ReadNodes(inputName)
 
+	fmt.Printf("Nodes: %d\n", len(nodes))
 	//fmt.Println("startNode", startNode)
 	//fmt.Println("endNode", endNode)
 
-	startNodeIndex := getIndex(nodes, startNode)
-	endNodeIndex := getIndex(nodes, endNode)
-	distance := make([]int, len(nodes))
-	for i := range nodes {
-		distance[i] = math.MaxInt
+	distance := make(map[*Node]int, len(nodes))
+	for _, node := range nodes {
+		distance[node] = math.MaxInt
 	}
-	distance[startNodeIndex] = 0
+	distance[startNode] = 0
 
-	previous := make([]int, len(nodes))
-	for i := range nodes {
-		previous[i] = -1
+	previous := make(map[*Node]*Node, len(nodes))
+	for _, node := range nodes {
+		previous[node] = nil
 	}
 
-	queue := make([]int, len(nodes))
-	for i, _ := range nodes {
-		queue[i] = i
+	queue := make([]*Node, len(nodes))
+	for i, node := range nodes {
+		queue[i] = node
 	}
 	for len(queue) > 0 {
 		sort.Slice(queue, func(i, j int) bool {
 			return distance[queue[i]] < distance[queue[j]]
 		})
-		nodeIndex := queue[0]
+		node := queue[0]
 		queue = queue[1:]
 
-		if nodeIndex != startNodeIndex && previous[nodeIndex] == -1 {
+		if node != startNode && previous[node] == nil {
 			// Unreachable
 			continue
 		}
 
-		for _, v := range nodes[nodeIndex].neighbors {
-			vertexIndex := getIndex(nodes, v)
+		for _, v := range node.neighbors {
 			inQueue := false
 			for _, qi := range queue {
-				if vertexIndex == qi {
+				if v == qi {
 					inQueue = true
 					break
 				}
 			}
-			if inQueue && (nodes[vertexIndex].height-nodes[nodeIndex].height) <= 1 {
-				d := distance[nodeIndex] + 1
-				if d < distance[vertexIndex] {
-					distance[vertexIndex] = d
-					previous[vertexIndex] = nodeIndex
+			if inQueue && (v.height-node.height) <= 1 {
+				d := distance[node] + 1
+				if d < distance[v] {
+					distance[v] = d
+					previous[v] = node
 				}
 			}
 		}
 	}
 
 	// DEBUG
-	//for i, v := range distance {
+	//for i, node := range nodes {
 	//	char := "."
-	//	if v == math.MaxInt {
+	//	if distance[node] == math.MaxInt {
 	//		char = "X"
 	//	}
 	//	fmt.Print(char)
-	//	if i%181 == 180 {
+	//	if i%8 == 7 {
 	//		fmt.Println()
 	//	}
 	//}
 
-	return distance[endNodeIndex]
+	return distance[endNode]
 }
 
 func main() {

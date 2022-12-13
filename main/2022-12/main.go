@@ -88,13 +88,7 @@ func ReadNodes(inputName string) ([]*Node, *Node, *Node) {
 	return flatNodes, startNode, endNode
 }
 
-func DoIt(inputName string) int {
-	nodes, startNode, endNode := ReadNodes(inputName)
-
-	fmt.Printf("Nodes: %d\n", len(nodes))
-	//fmt.Println("startNode", startNode)
-	//fmt.Println("endNode", endNode)
-
+func getDistances(nodes []*Node, startNode *Node) map[*Node]int {
 	distance := make(map[*Node]int, len(nodes))
 	for _, node := range nodes {
 		distance[node] = math.MaxInt
@@ -124,8 +118,10 @@ func DoIt(inputName string) int {
 
 		if node != startNode && previous[node] == nil {
 			// Unreachable
-			continue
+			break
 		}
+
+		d := distanceMin + 1
 
 		for _, v := range node.neighbors {
 			inQueue := false
@@ -135,8 +131,7 @@ func DoIt(inputName string) int {
 					break
 				}
 			}
-			if inQueue && (v.height-node.height) <= 1 {
-				d := distance[node] + 1
+			if inQueue && (node.height-v.height) <= 1 {
 				if d < distance[v] {
 					distance[v] = d
 					previous[v] = node
@@ -145,25 +140,33 @@ func DoIt(inputName string) int {
 		}
 	}
 
-	// DEBUG
-	//for i, node := range nodes {
-	//	char := "."
-	//	if distance[node] == math.MaxInt {
-	//		char = "X"
-	//	}
-	//	fmt.Print(char)
-	//	if i%8 == 7 {
-	//		fmt.Println()
-	//	}
-	//}
+	return distance
+}
 
-	return distance[endNode]
+func DoIt(inputName string) (int, int) {
+	nodes, startNode, endNode := ReadNodes(inputName)
+	distances := getDistances(nodes, endNode)
+
+	fmt.Printf("Nodes: %d\n", len(nodes))
+	result1 := distances[startNode]
+	result2 := math.MaxInt
+	for node, distance := range distances {
+		if node.height == 'a' {
+			if result2 > distance {
+				result2 = distance
+			}
+		}
+	}
+
+	return result1, result2
+
 }
 
 func main() {
 	start := time.Now()
-	result := DoIt("main/2022-12/input.txt")
+	result1, result2 := DoIt("main/2022-12/input.txt")
 	elapsed := time.Since(start)
 	log.Printf("Elapsed %s", elapsed)
-	fmt.Println(result)
+	fmt.Println(result1)
+	fmt.Println(result2)
 }
